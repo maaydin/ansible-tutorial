@@ -5,67 +5,91 @@
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
 # you're doing.
+
 Vagrant.configure("2") do |config|
-  # The most common configuration options are documented and commented below.
-  # For a complete reference, please see the online documentation at
-  # https://docs.vagrantup.com.
+  config.vm.define "control" do |control|
+    control.vm.box = "ubuntu/trusty64"
+    control.vm.hostname = 'control'
+    control.vm.box = "ubuntu/trusty64"
 
-  # Every Vagrant development environment requires a box. You can search for
-  # boxes at https://atlas.hashicorp.com/search.
-  config.vm.box = "ubuntu/trusty64"
+    control.vm.network :private_network, ip: "192.168.35.1"
 
-  # Disable automatic box update checking. If you disable this, then
-  # boxes will only be checked for updates when the user runs
-  # `vagrant box outdated`. This is not recommended.
-  # config.vm.box_check_update = false
+    control.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 512]
+      v.customize ["modifyvm", :id, "--name", "control"]
+    end
+  end
 
-  # Create a forwarded port mapping which allows access to a specific port
-  # within the machine from a port on the host machine. In the example below,
-  # accessing "localhost:8080" will access port 80 on the guest machine.
-  # config.vm.network "forwarded_port", guest: 80, host: 8080
+  config.vm.define "web1" do |web1|
+    web1.vm.box = "ubuntu/trusty64"
+    web1.vm.hostname = 'web1'
+    web1.vm.box = "ubuntu/trusty64"
 
-  # Create a private network, which allows host-only access to the machine
-  # using a specific IP.
-  # config.vm.network "private_network", ip: "192.168.33.10"
+    web1.vm.network :private_network, ip: "192.168.35.101"
 
-  # Create a public network, which generally matched to bridged network.
-  # Bridged networks make the machine appear as another physical device on
-  # your network.
-  # config.vm.network "public_network"
+    web1.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 256]
+      v.customize ["modifyvm", :id, "--name", "web1"]
+    end
 
-  # Share an additional folder to the guest VM. The first argument is
-  # the path on the host to the actual folder. The second argument is
-  # the path on the guest to mount the folder. And the optional third
-  # argument is a set of non-required options.
-  # config.vm.synced_folder "../data", "/vagrant_data"
+    web1.ssh.private_key_path = ["keys/key", "~/.vagrant.d/insecure_private_key"]
+    web1.ssh.insert_key = false
+    web1.vm.provision "file", source: "keys/key.pub", destination: "~/.ssh/authorized_keys"
+  end
 
-  # Provider-specific configuration so you can fine-tune various
-  # backing providers for Vagrant. These expose provider-specific options.
-  # Example for VirtualBox:
-  #
-  # config.vm.provider "virtualbox" do |vb|
-  #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
-  #
-  #   # Customize the amount of memory on the VM:
-  #   vb.memory = "1024"
-  # end
-  #
-  # View the documentation for the provider you are using for more
-  # information on available options.
+  config.vm.define "web2" do |web2|
+    web2.vm.box = "ubuntu/trusty64"
+    web2.vm.hostname = 'web2'
+    web2.vm.box = "ubuntu/trusty64"
 
-  # Define a Vagrant Push strategy for pushing to Atlas. Other push strategies
-  # such as FTP and Heroku are also available. See the documentation at
-  # https://docs.vagrantup.com/v2/push/atlas.html for more information.
-  # config.push.define "atlas" do |push|
-  #   push.app = "YOUR_ATLAS_USERNAME/YOUR_APPLICATION_NAME"
-  # end
+    web2.vm.network :private_network, ip: "192.168.35.102"
 
-  # Enable provisioning with a shell script. Additional provisioners such as
-  # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
-  # documentation for more information about their specific syntax and use.
-  # config.vm.provision "shell", inline: <<-SHELL
-  #   apt-get update
-  #   apt-get install -y apache2
-  # SHELL
+    web2.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 256]
+      v.customize ["modifyvm", :id, "--name", "web2"]
+    end
+
+    web2.ssh.private_key_path = ["keys/key", "~/.vagrant.d/insecure_private_key"]
+    web2.ssh.insert_key = false
+    web2.vm.provision "file", source: "keys/key.pub", destination: "~/.ssh/authorized_keys"
+  end
+
+  config.vm.define "app" do |app|
+    app.vm.box = "ubuntu/trusty64"
+    app.vm.hostname = 'app'
+    app.vm.box = "ubuntu/trusty64"
+
+    app.vm.network :private_network, ip: "192.168.35.103"
+
+    app.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 256]
+      v.customize ["modifyvm", :id, "--name", "app"]
+    end
+
+    app.ssh.private_key_path = ["keys/key", "~/.vagrant.d/insecure_private_key"]
+    app.ssh.insert_key = false
+    app.vm.provision "file", source: "keys/key.pub", destination: "~/.ssh/authorized_keys"
+  end
+
+  config.vm.define "db" do |db|
+    db.vm.box = "ubuntu/trusty64"
+    db.vm.hostname = 'db'
+    db.vm.box = "ubuntu/trusty64"
+
+    db.vm.network :private_network, ip: "192.168.35.104"
+
+    db.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 256]
+      v.customize ["modifyvm", :id, "--name", "db"]
+    end
+
+    db.ssh.private_key_path = ["keys/key", "~/.vagrant.d/insecure_private_key"]
+    db.ssh.insert_key = false
+    db.vm.provision "file", source: "keys/key.pub", destination: "~/.ssh/authorized_keys"
+  end
 end
