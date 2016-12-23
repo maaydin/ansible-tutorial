@@ -1,0 +1,26 @@
+#!/bin/bash
+#
+# greeting        
+#
+# chkconfig: 
+# description:  Start up the Greeting Rest Service.
+
+RETVAL=$?
+
+case "$1" in
+ start)
+        echo $"Starting Greeting Service"
+        /bin/su greeting -c "java -jar /opt/greeting/greeting.jar > /var/log/greeting.log 2> /var/log/greeting-error.log" &
+		echo $! > /var/run/greeting.pid
+    ;;
+ stop)
+        kill -9 `cat /var/run/greeting.pid`
+        rm -f /var/run/greeting.pid
+    ;;
+ *)
+    echo $"Usage: $0 {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit $RETVAL

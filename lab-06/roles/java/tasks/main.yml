@@ -1,0 +1,5 @@
+---
+- name: Install openjdk repository
+  apt_repository: repo='ppa:openjdk-r/ppa'
+- name: Install openjdk
+  apt: name=openjdk-8-jdk state=present

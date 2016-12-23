@@ -1,0 +1,20 @@
+---
+- hosts: webservers
+  become: true
+
+  vars_files:
+    - "environments/dev.yml"
+
+  roles:
+    - nginx
+    - deploy_static_content
+
+- hosts: appservers
+  become: true
+
+  vars_files:
+    - "environments/dev.yml"
+
+  roles:
+    - java
+    - deploy_application

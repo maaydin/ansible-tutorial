@@ -1,0 +1,36 @@
+---
+
+- name: add group "greeting"
+  group: name=greeting
+
+- name: add user "greeting"
+  user: name=greeting group=greeting home=/home/greeting createhome=yes
+
+- name: Create stdout log file
+  file: path=/var/log/greeting.log state=touch owner=greeting group=greeting mode=0644
+
+- name: Create stderr log file
+  file: path=/var/log/greeting-error.log state=touch owner=greeting group=greeting mode=0644
+
+- name: Install greeting service script
+  copy: src=greeting.service dest=/etc/init.d/greeting mode=0755
+
+- name: Create application directory
+  file: path=/opt/greeting state=directory
+
+- name: Stop greeting
+  service: name=greeting state=stopped
+
+- name: Get application content
+  shell: ls -1 /opt/greeting
+  register: content
+
+- name: Undeploy previous version of application
+  file: path=/opt/greeting/{{item}} state=absent
+  with_items: "{{content.stdout_lines}}"
+
+- name: Deploy application
+  copy: src={{app_file_name}} dest=/opt/greeting/greeting.jar mode=0555
+
+- name: Start greeting
+  service: name=greeting state=started enabled=yes
