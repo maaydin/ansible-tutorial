@@ -1,0 +1,36 @@
+---
+# This playbook deploys greeting application
+
+- hosts: data-tier
+  become: true
+
+  vars_files:
+    - "environments/{{env_name}}.yml"
+
+  roles:
+    - selinux
+    - firewall
+    - mariadb
+
+- hosts: web-tier
+  become: true
+
+  vars_files:
+    - "environments/{{env_name}}.yml"
+
+  roles:
+    - selinux
+    - firewall
+    - nginx
+    - deploy_static_content
+
+- hosts: application-tier
+  become: true
+
+  vars_files:
+    - "environments/{{env_name}}.yml"
+
+  roles:
+    - selinux
+    - firewall
+    - deploy_application

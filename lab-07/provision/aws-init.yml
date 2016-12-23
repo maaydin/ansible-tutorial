@@ -1,0 +1,12 @@
+---
+# This playbook deploys greeting application on AWS for first time.
+
+- hosts: localhost
+  connection: local
+
+  vars_files:
+    - "environments/{{env_name}}.yml"
+
+  roles:
+    - ec2-load-balancer
+    - ec2-auto-scale

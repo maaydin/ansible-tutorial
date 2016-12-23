@@ -1,0 +1,15 @@
+---
+  ec2_region: eu-west-1
+  instance_type: m3.medium
+  suffix: test
+  # You should create subnets on different availibility zones manually as it is not provided ec2_vpc_subnet module with ansible <= 2.0
+  vpc_id: vpc-0c2b4c68
+  subnet_az_a: subnet-93cbb0f7
+  subnet_az_b: subnet-e5582993
+  az_a: eu-west-1a
+  az_b: eu-west-1b
+  ssh_key_name: ansible-traning
+  # Autoscaling Group min, max and desired numbers of intances
+  min_size: 1
+  max_size: 4
+  desired_capacity: 1

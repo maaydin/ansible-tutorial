@@ -1,0 +1,12 @@
+---
+# This playbook tests yollando application deployment
+
+- hosts: web-tier
+
+  roles:
+    - nginx
+
+- hosts: application-tier
+
+  roles:
+    - app

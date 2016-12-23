@@ -1,0 +1,9 @@
+---
+- name: Download Oracle JDK
+  get_url:
+    url: http://download.oracle.com/otn-pub/java/jdk/{{oracle_jdk_version}}-{{oracle_jdk_build_number}}/jdk-{{oracle_jdk_version}}-linux-x64.rpm
+    dest: /tmp/jdk-{{oracle_jdk_version}}-linux-x64.rpm
+    headers: 'Cookie:oraclelicense=accept-securebackup-cookie'
+
+- name: Install Oracle JDK
+  yum: name=/tmp/jdk-{{oracle_jdk_version}}-linux-x64.rpm state=present

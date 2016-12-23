@@ -1,0 +1,13 @@
+---
+- name: Install MariaDB
+  yum: name={{ item }} state=present
+  with_items:
+    - mariadb-server
+    - mariadb
+
+- name: Start MariaDB
+  service: name=mariadb state=started enabled=yes
+
+- name: Create sample db
+  command: mysql -u root -e 'CREATE DATABASE IF NOT EXISTS sampledb;'
+

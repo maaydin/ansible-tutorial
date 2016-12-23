@@ -1,0 +1,14 @@
+---
+# This playbook deploys greeting application for amazon image creation
+
+- hosts: localhost
+  connection: local
+  become: true
+
+  vars_files:
+    - "environments/{{env_name}}.yml"
+
+  roles:
+    - selinux
+    - nginx
+    - jdk

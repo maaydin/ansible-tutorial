@@ -1,0 +1,54 @@
+---
+- name: Configure Load Balancer Security Group
+  ec2_group:
+    name: y-lb-sg-{{suffix}}
+    vpc_id: "{{vpc_id}}"
+    description: Greeting Load Balancer Security Group - {{suffix}}
+    region: "{{ec2_region}}"
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 0.0.0.0/0
+    rules_egress:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 81
+        to_port: 81
+        cidr_ip: 0.0.0.0/0
+  register: lb_security_group
+
+- debug: msg="Load Balancer Security Group id={{lb_security_group.group_id}}"
+
+- name: Configure Load Balancer
+  ec2_elb_lb:
+    name: y-lb-{{suffix}}
+    state: present
+    region: "{{ec2_region}}"
+    connection_draining_timeout: 60
+    cross_az_load_balancing: yes
+    security_group_ids: "{{lb_security_group.group_id}}"
+    subnets: "{{subnet_az_a}},{{subnet_az_b}}"
+    listeners:
+      - protocol: http
+        load_balancer_port: 80
+        instance_port: 80
+    health_check:
+      ping_protocol: http
+      ping_port: 80
+      ping_path: "/"
+      response_timeout: 30
+      interval: 60
+      unhealthy_threshold: 2
+      healthy_threshold: 2
+  register: load_balancer
+
+- debug: msg="Elastic load balancer name= {{load_balancer.elb.name}}"
+- debug: msg="Elastic load balancer dns name= {{load_balancer.elb.dns_name}}"

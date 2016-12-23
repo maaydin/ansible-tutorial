@@ -1,0 +1,3 @@
+---
+- name: Wait for application to start
+  wait_for: port={{app_port}}

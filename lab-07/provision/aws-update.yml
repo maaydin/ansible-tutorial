@@ -1,0 +1,11 @@
+---
+# This playbook deploys greeting application with rolling updates
+
+- hosts: localhost
+  connection: local
+
+  vars_files:
+    - "environments/{{env_name}}.yml"
+
+  roles:
+    - ec2-auto-scale

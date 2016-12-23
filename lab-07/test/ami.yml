@@ -1,0 +1,9 @@
+---
+# This playbook tests yollando application for amazon image creation
+
+- hosts: localhost
+  connection: local
+
+  roles:
+    - nginx
+    - app

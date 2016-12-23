@@ -1,0 +1,38 @@
+{
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "echo 'centos' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "script": "scripts/prepare.sh"
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "provision/ami.yml",
+      "playbook_dir": "provision",
+      "extra_arguments" : [
+          "--extra-vars",
+          "env_name=test"
+      ]
+    },
+    {
+      "type": "shell",
+      "execute_command": "echo 'centos' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "script": "scripts/cleanup.sh"
+    }
+  ],
+  "builders": [
+    {
+      "name": "aws",
+      "type": "amazon-ebs",
+      "region": "eu-west-1",
+      "vpc_id": "vpc-0c2b4c68",
+      "subnet_id": "subnet-54cab130",
+      "associate_public_ip_address": "true",
+      "source_ami": "ami-7abd0209",
+      "instance_type": "t2.micro",
+      "ssh_username": "centos",
+      "ssh_pty": "true",
+      "ami_name": "greeting-centos7-{{timestamp}}"
+    }
+  ]
+}

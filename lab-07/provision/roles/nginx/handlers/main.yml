@@ -1,0 +1,6 @@
+---
+- name: Test nginx configuration
+  command: nginx -t
+
+- name: Reload nginx configuration
+  command: nginx -s reload

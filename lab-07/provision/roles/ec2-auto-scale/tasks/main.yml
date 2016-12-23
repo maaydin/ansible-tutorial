@@ -1,0 +1,110 @@
+---
+- name: Set a random id for launch configuration updates
+  set_fact:
+    lc_rand: "{{ 10000 | random }}"
+  run_once: yes
+
+- name: Configure Launch Configuration Security Group
+  ec2_group:
+    name: y-lc-sg-{{suffix}}
+    description: Greeting Launch Configuration Security Group - {{suffix}}
+    vpc_id: "{{vpc_id}}"
+    region: "{{ec2_region}}"
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 81
+        to_port: 81
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+  register: lc_security_group
+
+- debug: msg="Launch Configuration Security Group id={{lc_security_group.group_id}}"
+
+- name: Configure Launch Configuration
+  ec2_lc:
+    name: y-lc-{{suffix}}-{{lc_rand}}
+    region: "{{ec2_region}}"
+    image_id: "{{image_id}}"
+    assign_public_ip: yes
+    key_name: "{{ssh_key_name}}"
+    security_groups: ["{{lc_security_group.group_id}}"]
+    instance_type: "{{instance_type}}"
+    state: present
+  register: launch_config
+
+- debug: msg="Launch Configuration name= {{launch_config.name}}"
+
+- name: Configure Autoscaling Group
+  ec2_asg:
+    name: y_asg_{{suffix}}
+    region: "{{ec2_region}}"
+    launch_config_name: "{{launch_config.name}}"
+    load_balancers: "y-lb-{{suffix}}"
+    availability_zones: "{{az_a}},{{az_b}}"
+    health_check_period: 60
+    health_check_type: ELB
+    replace_all_instances: yes
+    min_size: "{{min_size}}"
+    max_size: "{{max_size}}"
+    desired_capacity: "{{desired_capacity}}"
+    vpc_zone_identifier: "{{subnet_az_a}},{{subnet_az_b}}"
+    wait_timeout: 600
+  register: autoscaling_group
+
+- debug: msg="Autoscaling Group name= {{autoscaling_group.name}}"
+- debug: msg="Instance(s) will be created immediately with id(s)= {{autoscaling_group.instances}}"
+
+- name: Configure Scaling Policies
+  ec2_scaling_policy:
+    region: "{{ec2_region}}"
+    name: "{{item.name}}"
+    asg_name: "{{autoscaling_group.name}}"
+    state: present
+    adjustment_type: "ChangeInCapacity"
+    min_adjustment_step: 1
+    scaling_adjustment: "{{item.scaling_adjustment}}"
+    cooldown: "{{item.cooldown}}"
+  with_items:
+    - name: y_sp_sc_up_{{suffix}}
+      scaling_adjustment: +1
+      cooldown: 180
+    - name: y_sp_sc_dw_{{suffix}}
+      scaling_adjustment: -1
+      cooldown: 300
+  register: scaling_policies
+
+- name: Configure Metric Alarms
+  ec2_metric_alarm:
+    region: "{{ec2_region}}"
+    name: "{{item.name}}"
+    state: present
+    metric: "CPUUtilization"
+    namespace: "AWS/EC2"
+    statistic: "Average"
+    comparison: "{{item.comparison}}"
+    threshold: "{{item.threshold}}"
+    period: 60
+    evaluation_periods: 5
+    unit: "Percent"
+    dimensions:
+      AutoScalingGroupName: "{{autoscaling_group.name}}"
+    alarm_actions: "{{item.alarm_actions}}"
+  with_items:
+    - name: "y_asg_{{suffix}}-up-m"
+      comparison: ">="
+      threshold: 50.0
+      alarm_actions:
+        - "{{ scaling_policies.results[0].arn }}"
+    - name: "y_asg_{{suffix}}-down-m"
+      comparison: "<="
+      threshold: 20.0
+      alarm_actions:
+        - "{{ scaling_policies.results[1].arn }}"
+  register: metric_alarms
