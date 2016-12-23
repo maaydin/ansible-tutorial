@@ -1,0 +1,27 @@
+---
+# Switched to shell as pyhton version lower than 2.7.9
+#
+#- name: Download Installation Script
+#  get_url:
+#    url: https://get.docker.com/
+#    dest: /tmp/docker.sh
+#    mode: 0755
+
+- name: Download docker install script
+  shell: curl -o /tmp/docker.sh https://get.docker.com/
+  args:
+    creates: /tmp/docker.sh
+
+- name: Install docker
+  shell: sh /tmp/docker.sh
+  args:
+    creates: /usr/bin/docker
+
+- name: Install pip
+  apt:
+    name: python-pip
+    state: present
+
+- name: Install docker-py
+  pip:
+    name: docker-py

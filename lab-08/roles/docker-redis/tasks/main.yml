@@ -1,0 +1,9 @@
+---
+- name: Create a redis container
+  docker_container:
+    name: myredis
+    image: redis
+    command: redis-server --appendonly yes
+    state: present
+    exposed_ports:
+      - 6379
