@@ -1,0 +1,19 @@
+web1 ansible_host=192.168.35.101
+web2 ansible_host=192.168.35.102
+app ansible_host=192.168.35.103
+db ansible_host=192.168.35.104
+
+[webservers]
+web1
+web2
+
+[appservers]
+app
+
+[dbservers]
+db
+
+[dc:children]
+webservers
+appservers
+dbservers
