@@ -1,0 +1,13 @@
+---
+- hosts: webservers
+  become: true
+  tasks:
+  - name: Install nginx
+    apt: name=nginx state=present
+  - name: Start nginx
+    service: name=nginx state=started enabled=yes
+- hosts: appservers
+  become: true
+  tasks:
+  - name: Install default-jdk
+    apt: name=default-jdk state=present
