@@ -1,0 +1,19 @@
+---
+- name: Install nginx server
+  apt: name=nginx state=present
+
+- name: Create static content directory
+  file: path=/opt/html state=directory owner=www-data group=www-data
+
+- name: Start nginx
+  service: name=nginx state=started enabled=yes
+
+- name: Update nginx default config
+  copy: src=default.conf dest=/etc/nginx/sites-enabled/default
+  notify:
+    - Test nginx configuration
+    - Reload nginx configuration
+
+- name: Flush handlers
+  meta: flush_handlers
+

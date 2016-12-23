@@ -1,0 +1,11 @@
+---
+- hosts: webservers
+  become: true
+
+  vars_files:
+    - "environments/dev.yml"
+
+  roles:
+    - ntp
+    - nginx
+    - deploy_static_content
